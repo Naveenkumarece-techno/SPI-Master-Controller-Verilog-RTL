@@ -1,0 +1,59 @@
+module tb_spi_master;
+
+    parameter DATA_WIDTH = 8;
+
+    reg clk;
+    reg rst;
+    reg start;
+    reg [DATA_WIDTH-1:0] mosi_data;
+    wire miso;
+    reg miso_in;
+    wire sclk;
+    wire cs;
+    wire done;
+
+    // DUT
+    spi_master #(DATA_WIDTH) uut (
+        .clk(clk),
+        .rst(rst),
+        .start(start),
+        .mosi_data(mosi_data),
+        .miso(miso),
+        .miso_in(miso_in),
+        .sclk(sclk),
+        .cs(cs),
+        .done(done)
+    );
+
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+
+    // Stimulus
+    initial begin
+        rst = 1;
+        start = 0;
+        mosi_data = 8'b10101011;
+        miso_in = 0;
+
+        #20;
+        rst = 0;
+
+        #20;
+        start = 1;
+
+        #10;
+        start = 0;
+
+        // Simulate slave shifting response bits
+        repeat(20) begin
+            #10 miso_in = $random;
+        end
+
+        #200;
+        $finish;
+    end
+
+endmodule
